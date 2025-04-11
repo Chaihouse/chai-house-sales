@@ -532,7 +532,7 @@
         <div style="display: flex; gap: 10px;">
           <input type="date" id="search-date" class="form-control" style="width: auto;">
           <button class="btn btn-secondary" onclick="loadOrders()">Search</button>
-          <button class="btn btn-primary" onclick="exportOrders()">Export Data</button>
+          <button class="btn btn-primary" onclick="exportToExcel()">Export to Excel</button>
         </div>
       </div>
       
@@ -601,20 +601,31 @@
     };
 
     // Local storage for orders
-    let orders = JSON.parse(localStorage.getItem('chaiHouseOrders')) || [];
+    let orders = [];
     let currentOrder = {
-      orderId: orders.length > 0 ? Math.max(...orders.map(o => o.orderId)) + 1 : 1,
+      orderId: 1,
       date: '',
       items: []
     };
 
     // Initialize the page
-    window.onload = () => {
+    window.onload = async () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('order-date').value = today;
       document.getElementById('search-date').value = today;
       document.getElementById('report-date').value = today;
-      document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
+      
+      // Load orders from server
+      try {
+        const response = await fetch('http://localhost:3000/api/orders');
+        orders = await response.json();
+        currentOrder.orderId = orders.length > 0 ? Math.max(...orders.map(o => o.orderId)) + 1 : 1;
+        document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        alert('Error loading orders. Please try again later.');
+      }
+
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
@@ -636,9 +647,24 @@
       loadOrders();
     };
 
-    // Save orders to localStorage
-    function saveOrders() {
-      localStorage.setItem('chaiHouseOrders', JSON.stringify(orders));
+    // Save orders to server
+    async function saveOrders() {
+      try {
+        const response = await fetch('http://localhost:3000/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orders[orders.length - 1])
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to save order');
+        }
+      } catch (error) {
+        console.error('Error saving order:', error);
+        alert('Error saving order. Please try again later.');
+      }
     }
 
     // Add item to current order
@@ -745,72 +771,127 @@
     }
 
     // Load orders for selected date
-    function loadOrders() {
+    async function loadOrders() {
       const date = document.getElementById('search-date').value;
-      const filteredOrders = date ? orders.filter(order => order.date === date) : orders;
-      
-      const tbody = document.getElementById('orders-list');
-      tbody.innerHTML = '';
-      
-      if (filteredOrders.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px;">No orders found for selected date</td>`;
-        tbody.appendChild(row);
-        return;
-      }
-      
-      // Sort orders by most recent first
-      filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      filteredOrders.forEach(order => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>#${order.orderId}</td>
-          <td>${formatDisplayDate(order.date)}</td>
-          <td>
-            <div class="order-items-container">
-              ${order.items.map(i => `
-                <div class="order-item-detail">
-                  <span>${i.name}</span>
-                  <span>${i.quantity} × ${i.price} = ${i.total} Rs</span>
-                </div>
-              `).join('')}
-            </div>
-          </td>
-          <td>${order.totalAmount} Rs</td>
-          <td>
-            <button onclick="showBillFromHistory(${order.orderId})" class="btn btn-primary" style="padding: 5px 10px; margin-bottom: 5px;">
-              <i class="fas fa-receipt"></i> Bill
-            </button>
-            <button onclick="deleteOrder(${order.orderId})" class="btn btn-secondary" style="padding: 5px 10px;">
-              <i class="fas fa-trash-alt"></i> Delete
-            </button>
-          </td>
+      try {
+        const response = await fetch('http://localhost:3000/api/orders');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        orders = await response.json();
+        const filteredOrders = date ? orders.filter(order => order.date === date) : orders;
+        
+        const tbody = document.getElementById('orders-list');
+        tbody.innerHTML = '';
+        
+        if (filteredOrders.length === 0) {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px;">No orders found for selected date</td>`;
+          tbody.appendChild(row);
+          return;
+        }
+        
+        // Sort orders by most recent first
+        filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        filteredOrders.forEach(order => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>#${order.orderId}</td>
+            <td>${formatDisplayDate(order.date)}</td>
+            <td>
+              <div class="order-items-container">
+                ${order.items.map(i => `
+                  <div class="order-item-detail">
+                    <span>${i.name}</span>
+                    <span>${i.quantity} × ${i.price} = ${i.total} Rs</span>
+                  </div>
+                `).join('')}
+              </div>
+            </td>
+            <td>${order.totalAmount} Rs</td>
+            <td>
+              <button onclick="showBillFromHistory(${order.orderId})" class="btn btn-primary" style="padding: 5px 10px; margin-bottom: 5px;">
+                <i class="fas fa-receipt"></i> Bill
+              </button>
+              <button onclick="deleteOrder(${order.orderId})" class="btn btn-secondary" style="padding: 5px 10px;">
+                <i class="fas fa-trash-alt"></i> Delete
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        const tbody = document.getElementById('orders-list');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 20px; color: red;">
+              Error loading orders. Please make sure the server is running at http://localhost:3000
+            </td>
+          </tr>
         `;
-        tbody.appendChild(row);
-      });
+      }
     }
 
     // Delete an order
-    function deleteOrder(orderId) {
+    async function deleteOrder(orderId) {
       if (confirm('Are you sure you want to delete this order?')) {
-        orders = orders.filter(order => order.orderId !== orderId);
-        saveOrders();
-        loadOrders();
+        try {
+          const response = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to delete order');
+          }
+          
+          loadOrders();
+        } catch (error) {
+          console.error('Error deleting order:', error);
+          alert('Error deleting order. Please try again later.');
+        }
       }
     }
 
-    // Export orders to JSON file
-    function exportOrders() {
-      const dataStr = JSON.stringify(orders, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
-      const exportFileDefaultName = `chai-house-orders-${new Date().toISOString().split('T')[0]}.json`;
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
+    // Export orders to Excel
+    async function exportToExcel() {
+      try {
+        console.log('Starting Excel export...');
+        const response = await fetch('http://localhost:3000/api/export-excel');
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to export to Excel');
+        }
+
+        // Check if the response is JSON (error) or Excel file
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to export to Excel');
+        }
+        
+        // Get the blob from the response
+        const blob = await response.blob();
+        
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `chai-house-orders-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        console.log('Excel file downloaded successfully');
+      } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        alert(`Error exporting to Excel: ${error.message}`);
+      }
     }
 
     // Generate daily sales report
