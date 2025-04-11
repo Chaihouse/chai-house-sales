@@ -84,6 +84,7 @@
       font-weight: 500;
     }
     
+    /* Rest of your existing CSS remains the same */
     .card {
       background: white;
       border-radius: 10px;
@@ -296,55 +297,6 @@
       color: var(--gray);
     }
     
-    /* Enhanced Order History Styles */
-    #orders-list tr td {
-      vertical-align: top;
-      padding: 10px;
-    }
-    
-    #orders-list {
-      font-size: 14px;
-    }
-    
-    #orders-list tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    #orders-list tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    
-    .order-item-detail {
-      display: flex;
-      justify-content: space-between;
-      padding: 2px 0;
-    }
-    
-    .order-items-container {
-      max-height: 100px;
-      overflow-y: auto;
-      padding-right: 5px;
-    }
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 3px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 3px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-    
     @media (max-width: 768px) {
       .grid {
         grid-template-columns: 1fr;
@@ -365,16 +317,6 @@
         height: 40px;
         width: 40px;
       }
-      
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-      }
-      
-      .date-display {
-        align-self: flex-start;
-      }
     }
   </style>
 </head>
@@ -391,6 +333,7 @@
       <div class="date-display" id="current-date"></div>
     </header>
     
+    <!-- Rest of your HTML remains the same -->
     <div class="grid">
       <!-- New Order Section -->
       <div class="card">
@@ -435,6 +378,7 @@
             <option value="LEMON SODA" data-price="20">LEMON SODA (20 Rs)</option>
             <option value="BUTTER MILK" data-price="20">BUTTER MILK (20 Rs)</option>
             <option value="COOL DRINKS" data-price="20">COOL DRINKS (20 Rs)</option>
+
           </select>
         </div>
         
@@ -525,14 +469,13 @@
       </div>
     </div>
     
-    <!-- Enhanced Order History Section -->
+    <!-- Order History -->
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">Order History</h2>
         <div style="display: flex; gap: 10px;">
           <input type="date" id="search-date" class="form-control" style="width: auto;">
           <button class="btn btn-secondary" onclick="loadOrders()">Search</button>
-          <button class="btn btn-primary" onclick="exportToExcel()">Export to Excel</button>
         </div>
       </div>
       
@@ -544,7 +487,7 @@
               <th>Date</th>
               <th>Items</th>
               <th>Total</th>
-              <th>Actions</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="orders-list"></tbody>
@@ -571,61 +514,50 @@
   <script>
     // Menu items with fixed prices
     const menuPrices = {
-      "TEA": 15,
-      "MILK": 20,
-      "LEMON TEA": 20,
-      "GREEN TEA": 20,
-      "BADAM MILK": 20,
-      "ROSE MILK": 20,
-      "COFFEE": 20,
-      "BAJJI": 10,
-      "CUT MIRCHI": 50,
-      "ALASANDA VADA": 10,
-      "CHILLI GOBI": 70,
-      "CHILLI MUSHROOM": 90,
-      "CHILLI PANEER": 100,
-      "DRY GOBI": 70,
-      "DRY MUSHROOM": 90,
-      "DRY PANEER": 100,
-      "VEG RICE": 50,
-      "JEERA RICE": 60,
-      "GOBI RICE": 70,
-      "MUSHROOM RICE": 80,
-      "PANEER RICE": 100,
-      "KAJU RICE": 100,
-      "EGG RICE": 60,
-      "NANNARI": 30,
-      "LEMON SODA": 20,
-      "BUTTER MILK": 20,
-      "COOL DRINKS": 20
+      "TEA" :15,
+"MILK" :20,
+"LEMON TEA" :20,
+"GREEN TEA" :20,
+"BADAM MILK" :20,
+"ROSE MILK" :20,
+"COFFEE" :20,
+"BAJJI" :10,
+"CUT MIRCHI" :50,
+"ALASANDA VADA" :10,
+"CHILLI GOBI" :70,
+"CHILLI MUSHROOM" :90,
+"CHILLI PANEER" :100,
+"DRY GOBI" :70,
+"DRY MUSHROOM" :90,
+"DRY PANEER" :100,
+"VEG RICE" :50,
+"JEERA RICE" :60,
+"GOBI RICE" :70,
+"MUSHROOM RICE" :80,
+"PANEER RICE" :100,
+"KAJU RICE" :100,
+"EGG RICE" :60,
+"NANNARI" :30,
+"LEMON SODA" :20,
+"BUTTER MILK" :20,
+"COOL DRINKS" :20
     };
 
     // Local storage for orders
-    let orders = [];
+    let orders = JSON.parse(localStorage.getItem('chaiHouseOrders')) || [];
     let currentOrder = {
-      orderId: 1,
+      orderId: orders.length > 0 ? Math.max(...orders.map(o => o.orderId)) + 1 : 1,
       date: '',
       items: []
     };
 
     // Initialize the page
-    window.onload = async () => {
+    window.onload = () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('order-date').value = today;
       document.getElementById('search-date').value = today;
       document.getElementById('report-date').value = today;
-      
-      // Load orders from server
-      try {
-        const response = await fetch('http://localhost:3000/api/orders');
-        orders = await response.json();
-        currentOrder.orderId = orders.length > 0 ? Math.max(...orders.map(o => o.orderId)) + 1 : 1;
-        document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
-      } catch (error) {
-        console.error('Error loading orders:', error);
-        alert('Error loading orders. Please try again later.');
-      }
-
+      document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
@@ -643,28 +575,13 @@
         }
       });
       
-      // Load today's orders immediately
+      // Load initial orders
       loadOrders();
     };
 
-    // Save orders to server
-    async function saveOrders() {
-      try {
-        const response = await fetch('http://localhost:3000/api/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(orders[orders.length - 1])
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to save order');
-        }
-      } catch (error) {
-        console.error('Error saving order:', error);
-        alert('Error saving order. Please try again later.');
-      }
+    // Save orders to localStorage
+    function saveOrders() {
+      localStorage.setItem('chaiHouseOrders', JSON.stringify(orders));
     }
 
     // Add item to current order
@@ -759,139 +676,31 @@
       document.getElementById('order-items-list').innerHTML = '';
       document.getElementById('order-total').textContent = '0 Rs';
       document.getElementById('item-count').textContent = '0 items';
-      
-      // Refresh order history
-      loadOrders();
-    }
-
-    // Format date for display
-    function formatDisplayDate(dateString) {
-      const options = { year: 'numeric', month: 'short', day: 'numeric' };
-      return new Date(dateString).toLocaleDateString('en-US', options);
     }
 
     // Load orders for selected date
-    async function loadOrders() {
+    function loadOrders() {
       const date = document.getElementById('search-date').value;
-      try {
-        const response = await fetch('http://localhost:3000/api/orders');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        orders = await response.json();
-        const filteredOrders = date ? orders.filter(order => order.date === date) : orders;
-        
-        const tbody = document.getElementById('orders-list');
-        tbody.innerHTML = '';
-        
-        if (filteredOrders.length === 0) {
-          const row = document.createElement('tr');
-          row.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px;">No orders found for selected date</td>`;
-          tbody.appendChild(row);
-          return;
-        }
-        
-        // Sort orders by most recent first
-        filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        filteredOrders.forEach(order => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>#${order.orderId}</td>
-            <td>${formatDisplayDate(order.date)}</td>
-            <td>
-              <div class="order-items-container">
-                ${order.items.map(i => `
-                  <div class="order-item-detail">
-                    <span>${i.name}</span>
-                    <span>${i.quantity} × ${i.price} = ${i.total} Rs</span>
-                  </div>
-                `).join('')}
-              </div>
-            </td>
-            <td>${order.totalAmount} Rs</td>
-            <td>
-              <button onclick="showBillFromHistory(${order.orderId})" class="btn btn-primary" style="padding: 5px 10px; margin-bottom: 5px;">
-                <i class="fas fa-receipt"></i> Bill
-              </button>
-              <button onclick="deleteOrder(${order.orderId})" class="btn btn-secondary" style="padding: 5px 10px;">
-                <i class="fas fa-trash-alt"></i> Delete
-              </button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      } catch (error) {
-        console.error('Error loading orders:', error);
-        const tbody = document.getElementById('orders-list');
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 20px; color: red;">
-              Error loading orders. Please make sure the server is running at http://localhost:3000
-            </td>
-          </tr>
+      const filteredOrders = date ? orders.filter(order => order.date === date) : orders;
+      
+      const tbody = document.getElementById('orders-list');
+      tbody.innerHTML = '';
+      
+      filteredOrders.forEach(order => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>#${order.orderId}</td>
+          <td>${order.date}</td>
+          <td>${order.items.map(i => `${i.name} (${i.quantity})`).join(', ')}</td>
+          <td>${order.totalAmount} Rs</td>
+          <td>
+            <button onclick="showBillFromHistory(${order.orderId})" style="background: none; border: none; color: var(--primary); cursor: pointer;">
+              View Bill
+            </button>
+          </td>
         `;
-      }
-    }
-
-    // Delete an order
-    async function deleteOrder(orderId) {
-      if (confirm('Are you sure you want to delete this order?')) {
-        try {
-          const response = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
-            method: 'DELETE'
-          });
-          
-          if (!response.ok) {
-            throw new Error('Failed to delete order');
-          }
-          
-          loadOrders();
-        } catch (error) {
-          console.error('Error deleting order:', error);
-          alert('Error deleting order. Please try again later.');
-        }
-      }
-    }
-
-    // Export orders to Excel
-    async function exportToExcel() {
-      try {
-        console.log('Starting Excel export...');
-        const response = await fetch('http://localhost:3000/api/export-excel');
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to export to Excel');
-        }
-
-        // Check if the response is JSON (error) or Excel file
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to export to Excel');
-        }
-        
-        // Get the blob from the response
-        const blob = await response.blob();
-        
-        // Create a download link
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `chai-house-orders-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Clean up
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        console.log('Excel file downloaded successfully');
-      } catch (error) {
-        console.error('Error exporting to Excel:', error);
-        alert(`Error exporting to Excel: ${error.message}`);
-      }
+        tbody.appendChild(row);
+      });
     }
 
     // Generate daily sales report
@@ -972,7 +781,7 @@
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
           <div>
             <p><strong>Order ID:</strong> #${order.orderId}</p>
-            <p><strong>Date:</strong> ${formatDisplayDate(order.date)}</p>
+            <p><strong>Date:</strong> ${order.date}</p>
           </div>
         </div>
         
