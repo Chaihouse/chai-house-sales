@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chai House - Sales Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #470303;
+      --secondary: #4ECDC4;
+      --dark: #470303;
+      --light: #F7FFF7;
+      --accent: #470303;
+      --gray: #470303;
+      --success: #470303;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f7fa;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e6ed;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .logo-img {
+      height: 50px;
+      width: 50px;
+      object-fit: contain;
+    }
+    
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo h1 {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 24px;
+      margin: 0;
+      line-height: 1.2;
+    }
+    
+    .logo p {
+      color: var(--gray);
+      font-size: 14px;
+      margin: 0;
+    }
+    
+    .date-display {
+      background: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-weight: 500;
+    }
+    
+    /* Rest of your existing CSS remains the same */
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .card-title {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 18px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #ff5252;
+      transform: translateY(-2px);
+    }
+    
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background-color: var(--gray);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      transform: translateY(-2px);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: var(--gray);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: 'Poppins', sans-serif;
+      transition: border 0.3s ease;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-control[readonly] {
+      background-color: #f8f9fa;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: var(--gray);
+    }
+    
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-primary {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      animation: modalFadeIn 0.3s ease;
+    }
+    
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .modal-title {
+      font-weight: 600;
+      font-size: 20px;
+    }
+    
+    .close {
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray);
+    }
+    
+    .summary-card {
+      display: flex;
+      justify-content: space-between;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .summary-item {
+      text-align: center;
+    }
+    
+    .summary-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .summary-label {
+      font-size: 14px;
+      color: var(--gray);
+    }
+    
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
+      
+      .logo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      
+      .logo-img {
+        height: 40px;
+        width: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <img src="/Images/Logo 2.png" alt="Chai House Logo" class="logo-img">
+        <div class="logo-text">
+          <h1>Chai House</h1>
+          <p>The Real Flavour</p>
+        </div>
+      </div>
+      <div class="date-display" id="current-date"></div>
+    </header>
+    
+    <!-- Rest of your HTML remains the same -->
+    <div class="grid">
+      <!-- New Order Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">New Order</h2>
+          <span class="badge badge-primary" id="current-order-id">Order #1</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="order-date">Date</label>
+          <input type="date" id="order-date" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="order-item">Item</label>
+          <select id="order-item" class="form-control">
+            <option value="">Select an item</option>
+            <option value="CHILLI GOBI" data-price="60">CHILLI GOBI (60 Rs)</option>
+            <option value="TEA" data-price="15">TEA (15 Rs)</option>
+            <option value="EGG RICE" data-price="60">EGG RICE (60 Rs)</option>
+            <option value="VEG RICE" data-price="50">VEG RICE (50 Rs)</option>
+            <option value="JEERA RICE" data-price="55">JEERA RICE (55 Rs)</option>
+            <option value="BADAM MILK" data-price="40">BADAM MILK (40 Rs)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="item-quantity">Quantity</label>
+          <input type="number" id="item-quantity" class="form-control" min="1" value="1" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="item-price">Price (Rs)</label>
+          <input type="number" id="item-price" class="form-control" min="1" required readonly>
+        </div>
+        
+        <button class="btn btn-primary" onclick="addItemToOrder()">Add Item</button>
+      </div>
+      
+      <!-- Current Order Items -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Current Order Items</h2>
+          <span class="badge badge-success" id="item-count">0 items</span>
+        </div>
+        
+        <div style="max-height: 300px; overflow-y: auto;">
+          <table id="current-order-items">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="order-items-list"></tbody>
+          </table>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+          <div>
+            <strong>Grand Total:</strong>
+            <span id="order-total" style="font-size: 18px; margin-left: 10px;">0 Rs</span>
+          </div>
+          <button class="btn btn-success" onclick="completeOrder()">Complete Order</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sales Report Section -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Daily Sales Report</h2>
+      </div>
+      
+      <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="report-date">Select Date</label>
+          <input type="date" id="report-date" class="form-control">
+        </div>
+        <button class="btn btn-primary" style="align-self: flex-end;" onclick="generateDailyReport()">Generate Report</button>
+      </div>
+      
+      <div id="daily-report" style="display: none;">
+        <div class="summary-card">
+          <div class="summary-item">
+            <div class="summary-value" id="total-orders">0</div>
+            <div class="summary-label">Total Orders</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value" id="total-sales">0 Rs</div>
+            <div class="summary-label">Total Sales</div>
+          </div>
+        </div>
+        
+        <h3 style="margin-bottom: 15px;">Item-wise Sales for <span id="report-date-display"></span></h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Total Sales</th>
+              </tr>
+            </thead>
+            <tbody id="item-wise-sales"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Order History -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Order History</h2>
+        <div style="display: flex; gap: 10px;">
+          <input type="date" id="search-date" class="form-control" style="width: auto;">
+          <button class="btn btn-secondary" onclick="loadOrders()">Search</button>
+        </div>
+      </div>
+      
+      <div style="max-height: 400px; overflow-y: auto;">
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bill Modal -->
+  <div class="modal" id="bill-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Order Invoice</h3>
+        <span class="close" onclick="closeBill()">&times;</span>
+      </div>
+      <div id="bill-content"></div>
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="btn btn-primary" onclick="printBill()">Print Bill</button>
+        <button class="btn btn-secondary" onclick="closeBill()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Menu items with fixed prices
+    const menuPrices = {
+      "CHILLI GOBI": 60,
+      "TEA": 15,
+      "EGG RICE": 60,
+      "VEG RICE": 50,
+      "JEERA RICE": 55,
+      "BADAM MILK": 40
+    };
+
+    // Local storage for orders
+    let orders = JSON.parse(localStorage.getItem('chaiHouseOrders')) || [];
+    let currentOrder = {
+      orderId: orders.length > 0 ? Math.max(...orders.map(o => o.orderId)) + 1 : 1,
+      date: '',
+      items: []
+    };
+
+    // Initialize the page
+    window.onload = () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('order-date').value = today;
+      document.getElementById('search-date').value = today;
+      document.getElementById('report-date').value = today;
+      document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      // Auto-set price when item is selected
+      document.getElementById('order-item').addEventListener('change', function() {
+        const selectedItem = this.value;
+        if (selectedItem && menuPrices[selectedItem]) {
+          document.getElementById('item-price').value = menuPrices[selectedItem];
+        } else {
+          document.getElementById('item-price').value = '';
+        }
+      });
+      
+      // Load initial orders
+      loadOrders();
+    };
+
+    // Save orders to localStorage
+    function saveOrders() {
+      localStorage.setItem('chaiHouseOrders', JSON.stringify(orders));
+    }
+
+    // Add item to current order
+    function addItemToOrder() {
+      const item = document.getElementById('order-item').value;
+      const quantity = parseInt(document.getElementById('item-quantity').value);
+      const price = parseFloat(document.getElementById('item-price').value);
+      
+      if (!item || !quantity || !price) {
+        alert('Please select an item and quantity!');
+        return;
+      }
+
+      currentOrder.items.push({
+        name: item,
+        quantity: quantity,
+        price: price,
+        total: quantity * price
+      });
+
+      updateOrderDisplay();
+      
+      // Reset item form
+      document.getElementById('order-item').value = '';
+      document.getElementById('item-quantity').value = 1;
+      document.getElementById('item-price').value = '';
+    }
+
+    // Update the current order display
+    function updateOrderDisplay() {
+      const tbody = document.getElementById('order-items-list');
+      tbody.innerHTML = '';
+      
+      let grandTotal = 0;
+      
+      currentOrder.items.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>${item.price} Rs</td>
+          <td>${item.total} Rs</td>
+          <td style="text-align: center;">
+            <button onclick="removeItem(${index})" style="background: none; border: none; color: var(--primary); cursor: pointer;">
+              <i class="fas fa-trash-alt"></i> Remove
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+        grandTotal += item.total;
+      });
+      
+      document.getElementById('order-total').textContent = grandTotal + ' Rs';
+      document.getElementById('item-count').textContent = `${currentOrder.items.length} items`;
+    }
+
+    // Remove item from order
+    function removeItem(index) {
+      currentOrder.items.splice(index, 1);
+      updateOrderDisplay();
+    }
+
+    // Complete the current order
+    function completeOrder() {
+      if (currentOrder.items.length === 0) {
+        alert('Please add at least one item to the order!');
+        return;
+      }
+      
+      currentOrder.date = document.getElementById('order-date').value;
+      
+      // Calculate order total
+      const orderTotal = currentOrder.items.reduce((sum, item) => sum + item.total, 0);
+      
+      // Save the order
+      orders.push({
+        ...currentOrder,
+        totalAmount: orderTotal
+      });
+      saveOrders();
+      
+      // Show bill
+      showBill(currentOrder);
+      
+      // Prepare for next order
+      currentOrder = {
+        orderId: currentOrder.orderId + 1,
+        date: document.getElementById('order-date').value,
+        items: []
+      };
+      document.getElementById('current-order-id').textContent = `Order #${currentOrder.orderId}`;
+      document.getElementById('order-items-list').innerHTML = '';
+      document.getElementById('order-total').textContent = '0 Rs';
+      document.getElementById('item-count').textContent = '0 items';
+    }
+
+    // Load orders for selected date
+    function loadOrders() {
+      const date = document.getElementById('search-date').value;
+      const filteredOrders = date ? orders.filter(order => order.date === date) : orders;
+      
+      const tbody = document.getElementById('orders-list');
+      tbody.innerHTML = '';
+      
+      filteredOrders.forEach(order => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>#${order.orderId}</td>
+          <td>${order.date}</td>
+          <td>${order.items.map(i => `${i.name} (${i.quantity})`).join(', ')}</td>
+          <td>${order.totalAmount} Rs</td>
+          <td>
+            <button onclick="showBillFromHistory(${order.orderId})" style="background: none; border: none; color: var(--primary); cursor: pointer;">
+              View Bill
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Generate daily sales report
+    function generateDailyReport() {
+      const date = document.getElementById('report-date').value;
+      if (!date) {
+        alert('Please select a date');
+        return;
+      }
+      
+      const dailyOrders = orders.filter(order => order.date === date);
+      const totalOrders = dailyOrders.length;
+      const totalSales = dailyOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+      
+      // Calculate item-wise sales
+      const itemSales = {};
+      dailyOrders.forEach(order => {
+        order.items.forEach(item => {
+          if (!itemSales[item.name]) {
+            itemSales[item.name] = {
+              quantity: 0,
+              total: 0
+            };
+          }
+          itemSales[item.name].quantity += item.quantity;
+          itemSales[item.name].total += item.total;
+        });
+      });
+      
+      // Display report
+      document.getElementById('report-date-display').textContent = date;
+      document.getElementById('total-orders').textContent = totalOrders;
+      document.getElementById('total-sales').textContent = totalSales + ' Rs';
+      
+      const tbody = document.getElementById('item-wise-sales');
+      tbody.innerHTML = '';
+      
+      for (const [item, data] of Object.entries(itemSales)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item}</td>
+          <td>${data.quantity}</td>
+          <td>${data.total} Rs</td>
+        `;
+        tbody.appendChild(row);
+      }
+      
+      document.getElementById('daily-report').style.display = 'block';
+    }
+
+    // Show bill for current order
+    function showBill(order) {
+      let itemsHtml = '';
+      let grandTotal = 0;
+      
+      order.items.forEach(item => {
+        const itemTotal = item.quantity * item.price;
+        grandTotal += itemTotal;
+        itemsHtml += `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>${item.price} Rs</td>
+            <td>${itemTotal} Rs</td>
+          </tr>
+        `;
+      });
+      
+      const billHtml = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="/Images/Logo 2.png" alt="Chai House Logo" style="height: 60px; margin-bottom: 10px;">
+          <h2 style="color: var(--primary); margin: 5px 0;">Chai House</h2>
+          <p style="color: var(--gray); margin: 0;">The Real Flavour</p>
+          <p style="margin: 5px 0;">opp. Spandana Hospital, Parthasaradhi Nagar</p>
+          <p style="margin: 0;">Dharmavaram, Andhra Pradesh 515671</p>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+          <div>
+            <p><strong>Order ID:</strong> #${order.orderId}</p>
+            <p><strong>Date:</strong> ${order.date}</p>
+          </div>
+        </div>
+        
+        <table style="width: 100%; margin-bottom: 20px;">
+          <thead>
+            <tr style="background-color: #f8f9fa;">
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align: right;"><strong>Grand Total:</strong></td>
+              <td><strong>${grandTotal} Rs</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+        
+        <div style="text-align: center; margin-top: 30px; color: var(--gray);">
+          <p>Thank you for your order!</p>
+          <p>Visit us again</p>
+        </div>
+      `;
+      
+      document.getElementById('bill-content').innerHTML = billHtml;
+      document.getElementById('bill-modal').style.display = 'flex';
+    }
+
+    // Show bill from order history
+    function showBillFromHistory(orderId) {
+      const order = orders.find(o => o.orderId === orderId);
+      if (order) {
+        showBill(order);
+      }
+    }
+
+    // Print the bill
+    function printBill() {
+      const printWindow = window.open('', '', 'width=600,height=600');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Order Invoice #${currentOrder.orderId}</title>
+            <style>
+              body { font-family: Arial; padding: 20px; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #ddd; padding: 8px; }
+              .text-right { text-align: right; }
+            </style>
+          </head>
+          <body>
+            ${document.getElementById('bill-content').innerHTML}
+            <script>
+              window.onload = function() { window.print(); };
+            <\/script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    // Close the bill view
+    function closeBill() {
+      document.getElementById('bill-modal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
